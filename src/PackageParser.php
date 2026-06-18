@@ -25,7 +25,7 @@ class PackageParser
      * @param bool $applyMarkdown Whether to transform markup used in readme.txt to HTML. Defaults to false.
      * @return array|bool Either an associative array or FALSE if the input file is not readable or not a valid ZIP archive.
      */
-    public static function parsePackage($packagePath, $applyMarkdown = false)
+    public static function parsePackage(string $packagePath, bool $applyMarkdown = false): array|bool
     {
         if (!file_exists($packagePath) || !is_readable($packagePath)) {
             return false;
@@ -120,21 +120,21 @@ class PackageParser
      * @param bool $applyMarkdown Whether to transform Markdown used in readme.txt sections to HTML. Defaults to false.
      * @return array|null Associative array, or NULL if the input isn't a valid readme.txt file.
      */
-    public static function parseReadme($readmeTxtContents, $applyMarkdown = false)
+    public static function parseReadme(string $readmeTxtContents, bool $applyMarkdown = false): ?array
     {
         $readmeTxtContents = trim($readmeTxtContents, " \t\n\r");
-        $readme = array(
+        $readme = [
             'name' => '',
-            'contributors' => array(),
+            'contributors' => [],
             'donate' => '',
-            'tags' => array(),
+            'tags' => [],
             'requires' => '',
             'requires_php' => '',
             'tested' => '',
             'stable' => '',
             'short_description' => '',
-            'sections' => array(),
-        );
+            'sections' => [],
+        ];
 
         //The readme.txt header has a fairly fixed structure, so we can parse it line-by-line
         $lines = explode("\n", $readmeTxtContents);
@@ -146,8 +146,8 @@ class PackageParser
         }
 
         //Then there's a bunch of meta fields formatted as "Field: value"
-        $headers = array();
-        $headerMap = array(
+        $headers = [];
+        $headerMap = [
             'Contributors' => 'contributors',
             'Donate link' => 'donate',
             'Tags' => 'tags',
@@ -155,7 +155,8 @@ class PackageParser
             'Tested up to' => 'tested',
             'Requires PHP' => 'requires_php',
             'Stable tag' => 'stable',
-        );
+        ];
+
         do { //Parse each readme.txt header
             $pieces = explode(':', array_shift($lines), 2);
             if (array_key_exists($pieces[0], $headerMap)) {
@@ -183,8 +184,8 @@ class PackageParser
         $readme['short_description'] = array_shift($lines);
 
         //Finally, a valid readme.txt also contains one or more "sections" identified by "== Section Name =="
-        $sections = array();
-        $contentBuffer = array();
+        $sections = [];
+        $contentBuffer = [];
         $currentSection = '';
         foreach ($lines as $line) {
             //Is this a section header?
@@ -196,7 +197,7 @@ class PackageParser
                 }
                 //Start reading a new section
                 $currentSection = $matches[1];
-                $contentBuffer = array();
+                $contentBuffer = [];
             } else {
                 //Buffer all section content
                 $contentBuffer[] = $line;
@@ -225,7 +226,7 @@ class PackageParser
      * @param string $text
      * @return string
      */
-    private static function applyMarkdown($text)
+    private static function applyMarkdown(string $text): string
     {
         //The WP standard for readme files uses some custom markup, like "= H4 headers ="
         $text = preg_replace('@^\s*=\s*(.+?)\s*=\s*$@m', "\n####$1####\n", $text);
@@ -254,10 +255,10 @@ class PackageParser
      * @param string $fileContents Contents of the plugin file
      * @return array|null See above for description.
      */
-    public static function getPluginHeaders($fileContents)
+    public static function getPluginHeaders(string $fileContents): ?array
     {
         //[Internal name => Name used in the plugin file]
-        $pluginHeaderNames = array(
+        $pluginHeaderNames = [
             'Name' => 'Plugin Name',
             'PluginURI' => 'Plugin URI',
             'Version' => 'Version',
@@ -273,7 +274,7 @@ class PackageParser
 
             //Site Wide Only is deprecated in favor of Network.
             '_sitewide' => 'Site Wide Only',
-        );
+        ];
 
         $headers = self::getFileHeaders($fileContents, $pluginHeaderNames);
 
@@ -328,23 +329,24 @@ class PackageParser
      * @param string $fileContents Contents of the theme stylesheet.
      * @return array|null See above for description.
      */
-    public static function getThemeHeaders($fileContents)
+    public static function getThemeHeaders(string $fileContents): ?array
     {
-        $themeHeaderNames = array(
-            'Name'        => 'Theme Name',
-            'ThemeURI'    => 'Theme URI',
+        $themeHeaderNames = [
+            'Name' => 'Theme Name',
+            'ThemeURI' => 'Theme URI',
             'Description' => 'Description',
-            'Author'      => 'Author',
-            'AuthorURI'   => 'Author URI',
-            'Version'     => 'Version',
-            'Template'    => 'Template',
-            'Status'      => 'Status',
-            'Tags'        => 'Tags',
-            'TextDomain'  => 'Text Domain',
-            'DomainPath'  => 'Domain Path',
+            'Author' => 'Author',
+            'AuthorURI' => 'Author URI',
+            'Version' => 'Version',
+            'Template' => 'Template',
+            'Status' => 'Status',
+            'Tags' => 'Tags',
+            'TextDomain' => 'Text Domain',
+            'DomainPath' => 'Domain Path',
             'RequiresPHP' => 'Requires PHP',
-            'DetailsURI'  => 'Details URI',
-        );
+            'DetailsURI' => 'Details URI',
+        ];
+
         $headers = self::getFileHeaders($fileContents, $themeHeaderNames);
 
         $headers['Tags'] = array_filter(array_map('trim', explode(',', strip_tags($headers['Tags']))));
@@ -368,9 +370,9 @@ class PackageParser
      * @param array $headerMap The list of headers to search for in the file.
      * @return array
      */
-    public static function getFileHeaders($fileContents, $headerMap)
+    public static function getFileHeaders(string $fileContents, array $headerMap): array
     {
-        $headers = array();
+        $headers = [];
 
         //Support systems that use CR as a line ending.
         $fileContents = str_replace("\r", "\n", $fileContents);
@@ -398,7 +400,7 @@ abstract class WshWpp_Archive
      * @param string $zipFileName
      * @return bool|WshWpp_Archive
      */
-    public static function open($zipFileName)
+    public static function open(string $zipFileName)
     {
         if (class_exists('ZipArchive', false)) {
             return WshWpp_ZipArchive::open($zipFileName);
@@ -420,7 +422,7 @@ abstract class WshWpp_Archive
      * @param array $file
      * @return string|false
      */
-    abstract public function getFileContents($file);
+    abstract public function getFileContents(array $file);
 }
 
 class WshWpp_ZipArchive extends WshWpp_Archive
@@ -435,7 +437,7 @@ class WshWpp_ZipArchive extends WshWpp_Archive
      *
      * @param ZipArchive $zipArchive
      */
-    protected function __construct($zipArchive)
+    protected function __construct(ZipArchive $zipArchive)
     {
         $this->archive = $zipArchive;
     }
@@ -446,7 +448,7 @@ class WshWpp_ZipArchive extends WshWpp_Archive
      * @param string $zipFileName
      * @return bool|self
      */
-    public static function open($zipFileName)
+    public static function open(string $zipFileName): bool|self
     {
         $zip = new ZipArchive();
         if ($zip->open($zipFileName) !== true) {
@@ -460,20 +462,20 @@ class WshWpp_ZipArchive extends WshWpp_Archive
      *
      * @return array<int, array{name: string, size: int, isFolder: bool, index: int}>
      */
-    public function listEntries()
+    public function listEntries(): array
     {
-        $list = array();
+        $list = [];
         $zip = $this->archive;
 
         for ($index = 0; $index < $zip->numFiles; $index++) {
             $info = $zip->statIndex($index);
             if (\is_array($info)) {
-                $list[] = array(
+                $list[] = [
                     'name' => $info['name'],
                     'size' => $info['size'],
                     'isFolder' => ($info['size'] == 0),
                     'index' => $index,
-                );
+                ];
             }
         }
 
@@ -486,7 +488,7 @@ class WshWpp_ZipArchive extends WshWpp_Archive
      * @param array{index: int} $fileInfo
      * @return string|false
      */
-    public function getFileContents($fileInfo)
+    public function getFileContents(array $fileInfo): string|false
     {
         return $this->archive->getFromIndex($fileInfo['index']);
     }
@@ -504,7 +506,7 @@ class WshWpp_PclZipArchive extends WshWpp_Archive
      *
      * @param string $zipFileName
      */
-    protected function __construct($zipFileName)
+    protected function __construct(string $zipFileName)
     {
         $this->archive = new PclZip($zipFileName);
     }
@@ -515,7 +517,7 @@ class WshWpp_PclZipArchive extends WshWpp_Archive
      * @param string $zipFileName
      * @return self
      */
-    public static function open($zipFileName)
+    public static function open(string $zipFileName): self
     {
         if (!class_exists('PclZip', false)) {
             require_once dirname(__FILE__) . '/pclzip.php';
@@ -528,21 +530,21 @@ class WshWpp_PclZipArchive extends WshWpp_Archive
      *
      * @return array<int, array{name: string, size: int, isFolder: bool, index: int}>
      */
-    public function listEntries()
+    public function listEntries(): array
     {
         $contents = $this->archive->listContent();
         if ($contents === 0) {
-            return array();
+            return [];
         }
 
-        $list = array();
+        $list = [];
         foreach ($contents as $info) {
-            $list[] = array(
+            $list[] = [
                 'name' => $info['filename'],
                 'size' => $info['size'],
                 'isFolder' => $info['folder'],
                 'index' => $info['index'],
-            );
+            ];
         }
 
         return $list;
@@ -554,7 +556,7 @@ class WshWpp_PclZipArchive extends WshWpp_Archive
      * @param array{index: int} $fileInfo
      * @return string|false
      */
-    public function getFileContents($fileInfo)
+    public function getFileContents(array $fileInfo): string|false
     {
         $result = $this->archive->extract(PCLZIP_OPT_BY_INDEX, $fileInfo['index'], PCLZIP_OPT_EXTRACT_AS_STRING);
 

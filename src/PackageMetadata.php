@@ -4,7 +4,7 @@ namespace WpPackageParser;
 
 final class PackageMetadata
 {
-    private const HEADER_MAP = array(
+    private const array HEADER_MAP = [
         'Name' => 'name',
         'Version' => 'version',
         'PluginURI' => 'homepage',
@@ -15,13 +15,13 @@ final class PackageMetadata
         'DetailsURI' => 'details_url',
         'Depends' => 'depends',
         'Provides' => 'provides',
-    );
+    ];
 
-    private const README_MAP = array(
+    private const array README_MAP = [
         'requires',
         'tested',
         'requires_php',
-    );
+    ];
 
     private array $packageInfo = [];
 
@@ -175,7 +175,7 @@ final class PackageMetadata
      */
     private function setReadmeSections(): void
     {
-        if (isset($this->packageInfo['readme']['sections']) && \is_array($this->packageInfo['readme']['sections']) && $this->packageInfo['readme']['sections'] !== array()) {
+        if (isset($this->packageInfo['readme']['sections']) && \is_array($this->packageInfo['readme']['sections']) && $this->packageInfo['readme']['sections'] !== []) {
             foreach ($this->packageInfo['readme']['sections'] as $sectionName => $sectionContent) {
                 $sectionName = str_replace(' ', '_', strtolower((string) $sectionName));
                 $this->metadata['sections'][$sectionName] = $sectionContent;
