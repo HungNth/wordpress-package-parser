@@ -1,0 +1,13 @@
+/vendor/
+composer.lock
+.DS_Store
+__MacOSX
+.idea/
+.vscode/
+.agent
+.claude
+.antigravity
+.opencode
+AGENTS.md
+CLAUDE.md
+node_modules

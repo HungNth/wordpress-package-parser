@@ -1,0 +1,25 @@
+{
+    "name": "hungnth/wordpress-package-parser",
+    "description": "A simple WordPress package parser",
+    "type": "library",
+    "keywords": [
+        "wordpress",
+        "package",
+        "parser"
+    ],
+    "authors": [
+        {
+            "name": "HungNth",
+            "email": "thienhungdev@gmail.com"
+        }
+    ],
+    "require": {
+        "erusev/parsedown": "^1.8"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Hungnth\\WpPackageParser\\": "src/"
+        }
+    }
+}
