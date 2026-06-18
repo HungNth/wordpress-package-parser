@@ -91,6 +91,7 @@ class PackageParser
         if (empty($type)) {
             $type = 'generic';
         }
+
         return compact('header', 'readme', 'pluginFile', 'stylesheet', 'type');
     }
 
@@ -113,7 +114,7 @@ class PackageParser
      * parses plugin readme's. In particular, it may mangle certain HTML markup that wp.org
      * handles correctly.
      *
-     * @see http://wordpress.org/extend/plugins/about/readme.txt
+     * @see https://wordpress.org/plugins/readme.txt
      *
      * @param string $readmeTxtContents The contents of a plugin's readme.txt file.
      * @param bool $applyMarkdown Whether to transform Markdown used in readme.txt sections to HTML. Defaults to false.
