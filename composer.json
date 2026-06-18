@@ -1,6 +1,6 @@
 {
     "name": "hungnth/wordpress-package-parser",
-    "description": "A simple WordPress package parser",
+    "description": "A PHP package for parsing WordPress plugin, theme, and generic package metadata.",
     "type": "library",
     "keywords": [
         "wordpress",
@@ -13,6 +13,11 @@
             "email": "thienhungdev@gmail.com"
         }
     ],
+    "homepage": "https://github.com/HungNth/wordpress-package-parser",
+    "support": {
+        "issues": "https://github.com/HungNth/wordpress-package-parser/issues",
+        "source": "https://github.com/HungNth/wordpress-package-parser"
+    },
     "require": {
         "php": ">=7.4",
         "erusev/parsedown": "^1.8"
