@@ -17,10 +17,22 @@
         "php": ">=7.4",
         "erusev/parsedown": "^1.8"
     },
+    "require-dev": {
+        "ext-zip": "*",
+        "phpunit/phpunit": "^9.6"
+    },
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Hungnth\\WpPackageParser\\": "src/"
+            "WpPackageParser\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "WpPackageParser\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
     }
 }
