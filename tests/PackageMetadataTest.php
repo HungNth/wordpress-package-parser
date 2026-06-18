@@ -157,7 +157,9 @@ MARKDOWN,
 
         $metadata = PackageMetadata::fromArchive($packagePath, 'custom-upload.zip')->getMetadata();
 
-        self::assertSame(['slug' => 'custom-upload'], $metadata);
+        self::assertSame('custom-upload', $metadata['slug']);
+        self::assertSame('generic', $metadata['type']);
+        self::assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $metadata['last_updated']);
     }
 
     public function testInvalidPackagePathThrowsInvalidPackageException(): void
