@@ -80,6 +80,27 @@ README,
         self::assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $metadata['last_updated']);
     }
 
+    public function testParseReturnsMetadataArrayAsConvenienceApi(): void
+    {
+        $packagePath = $this->createZip('alias-plugin.zip', [
+            'alias-plugin/alias-plugin.php' => <<<'PHP'
+<?php
+/**
+ * Plugin Name: Alias Plugin
+ * Version: 2.0.0
+ * Author: Jane Developer
+ */
+PHP,
+        ]);
+
+        $metadata = PackageMetadata::parse($packagePath, 'alias-plugin.zip');
+
+        self::assertSame('Alias Plugin', $metadata['name']);
+        self::assertSame('2.0.0', $metadata['version']);
+        self::assertSame('Jane Developer', $metadata['author']);
+        self::assertSame('alias-plugin', $metadata['slug']);
+    }
+
     /**
      * @param array<string, string> $files
      */
