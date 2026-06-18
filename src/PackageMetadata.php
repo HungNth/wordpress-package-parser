@@ -4,9 +4,6 @@ namespace WpPackageParser;
 
 final class PackageMetadata
 {
-    /**
-     * @var array<string, string>
-     */
     private const HEADER_MAP = array(
         'Name' => 'name',
         'Version' => 'version',
@@ -20,25 +17,16 @@ final class PackageMetadata
         'Provides' => 'provides',
     );
 
-    /**
-     * @var string[]
-     */
     private const README_MAP = array(
         'requires',
         'tested',
         'requires_php',
     );
 
-    /**
-     * @var array<string, mixed>
-     */
     private array $packageInfo = [];
 
     private string $filepath;
 
-    /**
-     * @var array<string, mixed>
-     */
     private array $metadata = [];
 
     private string $originalFilename;
@@ -68,9 +56,6 @@ final class PackageMetadata
     }
 
     /**
-     * Extract plugin or theme headers and readme contents from a ZIP file and convert them
-     * into a structure compatible with the custom update checker.
-     *
      * @throws InvalidPackageException if the input file cannot be parsed as a ZIP package.
      */
     private function extractMetadata(): void
@@ -92,10 +77,16 @@ final class PackageMetadata
         if (isset($this->packageInfo['type']) && $this->packageInfo['type'] !== 'generic') {
             $this->setInfoFromHeader();
             $this->setInfoFromReadme();
-            $this->setLastUpdateDate();
         }
 
         $this->setSlug();
+        $this->setPackageType();
+        $this->setLastUpdateDate();
+    }
+
+    private function setPackageType(): void
+    {
+        $this->metadata['type'] = $this->packageInfo['type'];
     }
 
     private function setInfoFromHeader(): void
@@ -120,10 +111,6 @@ final class PackageMetadata
         }
     }
 
-    /**
-     * @param array<string, mixed> $input
-     * @param array<string, string> $map
-     */
     private function setMappedFields(array $input, array $map): void
     {
         foreach ($map as $fieldKey => $metaKey) {
@@ -164,7 +151,7 @@ final class PackageMetadata
     private function setLastUpdateDate(): void
     {
         if (! isset($this->metadata['last_updated'])) {
-            $this->metadata['last_updated'] = gmdate('Y-m-d H:i:s', filemtime($this->filepath));
+            $this->metadata['last_updated'] = date('Y-m-d H:i:s', filemtime($this->filepath));
         }
     }
 
