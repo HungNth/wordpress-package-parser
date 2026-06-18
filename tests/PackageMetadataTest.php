@@ -16,6 +16,9 @@ final class PackageMetadataTest extends TestCase
      */
     private array $tempFiles = [];
 
+    /**
+     * Remove temporary ZIP fixtures created during a test.
+     */
     protected function tearDown(): void
     {
         foreach ($this->tempFiles as $tempFile) {
@@ -27,6 +30,9 @@ final class PackageMetadataTest extends TestCase
         $this->tempFiles = [];
     }
 
+    /**
+     * Verify plugin archives expose header, readme, slug, and upgrade metadata.
+     */
     public function testFromArchiveParsesPluginPackageMetadata(): void
     {
         $packagePath = $this->createZip('my-plugin.zip', [
@@ -81,6 +87,9 @@ README,
         self::assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $metadata['last_updated']);
     }
 
+    /**
+     * Verify the parse convenience API returns the same normalized metadata array.
+     */
     public function testParseReturnsMetadataArrayAsConvenienceApi(): void
     {
         $packagePath = $this->createZip('alias-plugin.zip', [
@@ -102,6 +111,9 @@ PHP,
         self::assertSame('alias-plugin', $metadata['slug']);
     }
 
+    /**
+     * Verify theme archives map theme headers and default details URL correctly.
+     */
     public function testThemePackageDefaultsDetailsUrlToThemeUriAndMapsRequiresPhp(): void
     {
         $packagePath = $this->createZip('sample-theme.zip', [
@@ -129,6 +141,9 @@ CSS,
         self::assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $metadata['last_updated']);
     }
 
+    /**
+     * Verify generic archives derive their slug from the generated temp filename.
+     */
     public function testGenericZipUsesArchiveBasenameWhenOriginalFilenameIsNotProvided(): void
     {
         $packagePath = $this->createZip('custom-upload.zip', [
@@ -145,6 +160,9 @@ MARKDOWN,
         self::assertStringEndsWith('-custom-upload', $metadata['slug']);
     }
 
+    /**
+     * Verify generic archives use the provided original filename for their slug.
+     */
     public function testGenericZipUsesProvidedOriginalFilenameAsSlug(): void
     {
         $packagePath = $this->createZip('custom-upload.zip', [
@@ -162,6 +180,9 @@ MARKDOWN,
         self::assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $metadata['last_updated']);
     }
 
+    /**
+     * Verify missing or unreadable archives surface the package parsing exception.
+     */
     public function testInvalidPackagePathThrowsInvalidPackageException(): void
     {
         $missingPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'missing-' . bin2hex(random_bytes(8)) . '.zip';

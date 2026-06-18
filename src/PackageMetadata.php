@@ -31,12 +31,20 @@ final class PackageMetadata
 
     private string $originalFilename;
 
+    /**
+     * Store the archive path and filename used to derive package metadata.
+     */
     private function __construct(string $filepath, string $originalFilename)
     {
         $this->filepath = $filepath;
         $this->originalFilename = $originalFilename;
     }
 
+    /**
+     * Build a metadata object from a ZIP archive.
+     *
+     * @throws InvalidPackageException if the archive cannot be parsed.
+     */
     public static function fromArchive(string $filepath, ?string $originalFilename = null): self
     {
         $package = new self($filepath, $originalFilename ?: basename($filepath));
@@ -45,17 +53,31 @@ final class PackageMetadata
         return $package;
     }
 
+    /**
+     * Parse a ZIP archive and return its normalized metadata array.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws InvalidPackageException if the archive cannot be parsed.
+     */
     public static function parse(string $filepath, ?string $originalFilename = null): array
     {
         return self::fromArchive($filepath, $originalFilename)->getMetadata();
     }
 
+    /**
+     * Return the normalized metadata collected from the archive.
+     *
+     * @return array<string, mixed>
+     */
     public function getMetadata(): array
     {
         return $this->metadata;
     }
 
     /**
+     * Extract low-level package information before normalizing it into metadata.
+     *
      * @throws InvalidPackageException if the input file cannot be parsed as a ZIP package.
      */
     private function extractMetadata(): void
@@ -72,6 +94,9 @@ final class PackageMetadata
         $this->setMetadata();
     }
 
+    /**
+     * Populate the normalized metadata fields from parsed package information.
+     */
     private function setMetadata(): void
     {
         if (isset($this->packageInfo['type']) && $this->packageInfo['type'] !== 'generic') {
@@ -84,11 +109,17 @@ final class PackageMetadata
         $this->setLastUpdateDate();
     }
 
+    /**
+     * Copy the detected package type into the normalized metadata.
+     */
     private function setPackageType(): void
     {
         $this->metadata['type'] = $this->packageInfo['type'];
     }
 
+    /**
+     * Map plugin or theme header fields into normalized metadata keys.
+     */
     private function setInfoFromHeader(): void
     {
         if (isset($this->packageInfo['header']) && \is_array($this->packageInfo['header']) && ! empty($this->packageInfo['header'])) {
@@ -97,6 +128,9 @@ final class PackageMetadata
         }
     }
 
+    /**
+     * Map supported readme.txt fields and sections into normalized metadata keys.
+     */
     private function setInfoFromReadme(): void
     {
         if (isset($this->packageInfo['readme']) && \is_array($this->packageInfo['readme']) && ! empty($this->packageInfo['readme'])) {
@@ -111,6 +145,12 @@ final class PackageMetadata
         }
     }
 
+    /**
+     * Copy mapped source fields into the metadata when their values are present.
+     *
+     * @param array<string, mixed> $input
+     * @param array<string, string> $map
+     */
     private function setMappedFields(array $input, array $map): void
     {
         foreach ($map as $fieldKey => $metaKey) {
@@ -120,6 +160,9 @@ final class PackageMetadata
         }
     }
 
+    /**
+     * Use a theme homepage as the details URL when no explicit details URL exists.
+     */
     private function setThemeDetailsUrl(): void
     {
         if ($this->packageInfo['type'] === 'theme' && ! isset($this->metadata['details_url']) && isset($this->metadata['homepage'])) {
@@ -127,6 +170,9 @@ final class PackageMetadata
         }
     }
 
+    /**
+     * Normalize readme section names and store their rendered content.
+     */
     private function setReadmeSections(): void
     {
         if (isset($this->packageInfo['readme']['sections']) && \is_array($this->packageInfo['readme']['sections']) && $this->packageInfo['readme']['sections'] !== array()) {
@@ -137,6 +183,9 @@ final class PackageMetadata
         }
     }
 
+    /**
+     * Extract the upgrade notice for the currently parsed package version.
+     */
     private function setReadmeUpgradeNotice(): void
     {
         if (isset($this->metadata['sections']['upgrade_notice'], $this->metadata['version'])) {
@@ -148,6 +197,9 @@ final class PackageMetadata
         }
     }
 
+    /**
+     * Set a last-updated timestamp from the archive modification time when absent.
+     */
     private function setLastUpdateDate(): void
     {
         if (! isset($this->metadata['last_updated'])) {
@@ -155,6 +207,9 @@ final class PackageMetadata
         }
     }
 
+    /**
+     * Derive the package slug from the archive filename or detected main package file.
+     */
     private function setSlug(): void
     {
         if ($this->packageInfo['type'] === 'generic') {

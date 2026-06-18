@@ -430,11 +430,22 @@ class WshWpp_ZipArchive extends WshWpp_Archive
      */
     protected $archive;
 
+    /**
+     * Wrap an opened native ZipArchive instance.
+     *
+     * @param ZipArchive $zipArchive
+     */
     protected function __construct($zipArchive)
     {
         $this->archive = $zipArchive;
     }
 
+    /**
+     * Open an archive with the native ZipArchive extension.
+     *
+     * @param string $zipFileName
+     * @return bool|self
+     */
     public static function open($zipFileName)
     {
         $zip = new ZipArchive();
@@ -444,6 +455,11 @@ class WshWpp_ZipArchive extends WshWpp_Archive
         return new self($zip);
     }
 
+    /**
+     * Return normalized entry metadata for each file in the archive.
+     *
+     * @return array<int, array{name: string, size: int, isFolder: bool, index: int}>
+     */
     public function listEntries()
     {
         $list = array();
@@ -464,6 +480,12 @@ class WshWpp_ZipArchive extends WshWpp_Archive
         return $list;
     }
 
+    /**
+     * Read an archive entry by its native ZipArchive index.
+     *
+     * @param array{index: int} $fileInfo
+     * @return string|false
+     */
     public function getFileContents($fileInfo)
     {
         return $this->archive->getFromIndex($fileInfo['index']);
@@ -477,11 +499,22 @@ class WshWpp_PclZipArchive extends WshWpp_Archive
      */
     protected $archive;
 
+    /**
+     * Create a PclZip-backed archive wrapper for the given filename.
+     *
+     * @param string $zipFileName
+     */
     protected function __construct($zipFileName)
     {
         $this->archive = new PclZip($zipFileName);
     }
 
+    /**
+     * Open an archive with the bundled PclZip fallback implementation.
+     *
+     * @param string $zipFileName
+     * @return self
+     */
     public static function open($zipFileName)
     {
         if (!class_exists('PclZip', false)) {
@@ -490,6 +523,11 @@ class WshWpp_PclZipArchive extends WshWpp_Archive
         return new self($zipFileName);
     }
 
+    /**
+     * Return normalized entry metadata for each file reported by PclZip.
+     *
+     * @return array<int, array{name: string, size: int, isFolder: bool, index: int}>
+     */
     public function listEntries()
     {
         $contents = $this->archive->listContent();
@@ -510,6 +548,12 @@ class WshWpp_PclZipArchive extends WshWpp_Archive
         return $list;
     }
 
+    /**
+     * Extract an archive entry as a string by its PclZip index.
+     *
+     * @param array{index: int} $fileInfo
+     * @return string|false
+     */
     public function getFileContents($fileInfo)
     {
         $result = $this->archive->extract(PCLZIP_OPT_BY_INDEX, $fileInfo['index'], PCLZIP_OPT_EXTRACT_AS_STRING);
