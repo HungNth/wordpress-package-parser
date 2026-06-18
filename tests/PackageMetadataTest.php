@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WpPackageParser\Tests;
 
 use PHPUnit\Framework\TestCase;
+use WpPackageParser\InvalidPackageException;
 use WpPackageParser\PackageMetadata;
 use ZipArchive;
 
@@ -99,6 +100,74 @@ PHP,
         self::assertSame('2.0.0', $metadata['version']);
         self::assertSame('Jane Developer', $metadata['author']);
         self::assertSame('alias-plugin', $metadata['slug']);
+    }
+
+    public function testThemePackageDefaultsDetailsUrlToThemeUriAndMapsRequiresPhp(): void
+    {
+        $packagePath = $this->createZip('sample-theme.zip', [
+            'sample-theme/style.css' => <<<'CSS'
+/*
+Theme Name: Sample Theme
+Theme URI: https://example.com/sample-theme
+Version: 3.1.0
+Author: Jane Developer
+Author URI: https://example.com
+Requires PHP: 7.4
+*/
+CSS,
+        ]);
+
+        $metadata = PackageMetadata::parse($packagePath, 'sample-theme.zip');
+
+        self::assertSame('Sample Theme', $metadata['name']);
+        self::assertSame('3.1.0', $metadata['version']);
+        self::assertSame('https://example.com/sample-theme', $metadata['homepage']);
+        self::assertSame('https://example.com/sample-theme', $metadata['details_url']);
+        self::assertSame('Jane Developer', $metadata['author']);
+        self::assertSame('7.4', $metadata['requires_php']);
+        self::assertSame('sample-theme', $metadata['slug']);
+        self::assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $metadata['last_updated']);
+    }
+
+    public function testGenericZipUsesArchiveBasenameWhenOriginalFilenameIsNotProvided(): void
+    {
+        $packagePath = $this->createZip('custom-upload.zip', [
+            'payload/readme.md' => <<<'MARKDOWN'
+# Generic Package
+
+This ZIP does not contain WordPress plugin or theme headers.
+MARKDOWN,
+        ]);
+
+        $metadata = PackageMetadata::fromArchive($packagePath)->getMetadata();
+
+        self::assertStringStartsWith('wpp-', $metadata['slug']);
+        self::assertStringEndsWith('-custom-upload', $metadata['slug']);
+    }
+
+    public function testGenericZipUsesProvidedOriginalFilenameAsSlug(): void
+    {
+        $packagePath = $this->createZip('custom-upload.zip', [
+            'payload/readme.md' => <<<'MARKDOWN'
+# Generic Package
+
+This ZIP does not contain WordPress plugin or theme headers.
+MARKDOWN,
+        ]);
+
+        $metadata = PackageMetadata::fromArchive($packagePath, 'custom-upload.zip')->getMetadata();
+
+        self::assertSame(['slug' => 'custom-upload'], $metadata);
+    }
+
+    public function testInvalidPackagePathThrowsInvalidPackageException(): void
+    {
+        $missingPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'missing-' . bin2hex(random_bytes(8)) . '.zip';
+
+        $this->expectException(InvalidPackageException::class);
+        $this->expectExceptionMessage('could not be parsed as a ZIP package');
+
+        PackageMetadata::fromArchive($missingPath, 'missing-plugin.zip');
     }
 
     /**
